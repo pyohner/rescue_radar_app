@@ -14,6 +14,8 @@ import { AnimalService, Animal } from '../animal.service';
 export class DashboardComponent implements OnInit {
   @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
   @ViewChild('spayChart') spayChart: BaseChartDirective | undefined;
+  @ViewChild('typeOverTimeChart') typeOverTimeChart: BaseChartDirective | undefined;
+
 
   chartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
@@ -31,6 +33,23 @@ export class DashboardComponent implements OnInit {
 
   spayChartOptions: ChartConfiguration<'doughnut'>['options'] = {
     responsive: true
+  };
+
+  typeOverTimeData: ChartConfiguration<'line'>['data'] = {
+    labels: [],
+    datasets: []
+  };
+
+  typeOverTimeOptions: ChartConfiguration<'line'>['options'] = {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+      title: { display: true, text: 'Animal Types Over Time' }
+    },
+    scales: {
+      x: { title: { display: true, text: 'Date' } },
+      y: { title: { display: true, text: 'Count' }, beginAtZero: true }
+    }
   };
 
   constructor(private animalService: AnimalService) {}
@@ -64,6 +83,42 @@ export class DashboardComponent implements OnInit {
       setTimeout(() => {
         if (this.spayChart) this.spayChart.update();
       });
+
+      const dateTypeCounts: { [date: string]: { [type: string]: number } } = {};
+      const typesSet = new Set<string>();
+
+      for (const animal of animals) {
+        const date = animal.published_at?.slice(0, 10); // 'YYYY-MM-DD'
+        const type = animal.type || 'Unknown';
+
+        typesSet.add(type);
+
+        if (!dateTypeCounts[date]) {
+          dateTypeCounts[date] = {};
+        }
+
+        dateTypeCounts[date][type] = (dateTypeCounts[date][type] || 0) + 1;
+      }
+
+// Sorted dates
+      const sortedDates = Object.keys(dateTypeCounts).sort();
+      this.typeOverTimeData.labels = sortedDates;
+
+      this.typeOverTimeData.datasets = Array.from(typesSet).map(type => {
+        return {
+          label: type,
+          data: sortedDates.map(date => dateTypeCounts[date][type] || 0),
+          fill: false,
+          tension: 0.3
+        };
+
+
+      });
+
+      setTimeout(() => {
+        this.typeOverTimeChart?.update();
+      });
+
 
       console.log('Chart labels:', this.chartData.labels);
       console.log('Chart data:', this.chartData.datasets[0].data);

@@ -9,6 +9,7 @@ export interface Animal {
   spayed_neutered: boolean;
   house_trained: boolean;
   special_needs: boolean;
+  published_at: string;
   // Add other fields as needed
 }
 
