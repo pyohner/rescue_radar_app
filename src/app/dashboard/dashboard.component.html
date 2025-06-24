@@ -1,8 +1,57 @@
-<div style="width: 600px; margin: auto;">
-  <canvas baseChart
-          #chart
-          [data]="chartData"
-          [options]="chartOptions"
-          [type]="'bar'">
-  </canvas>
-</div>
+<!--<div style="max-width: 800px; margin: auto; padding: 1rem;">-->
+<!--  <h2 style="text-align: center;">Animal Type Distribution</h2>-->
+<!--  <canvas baseChart-->
+<!--          #chart-->
+<!--          [data]="chartData"-->
+<!--          [options]="chartOptions"-->
+<!--          [type]="'bar'">-->
+<!--  </canvas>-->
+<!--</div>-->
+
+<!--<div style="max-width: 600px; height: 400px; margin: auto;">-->
+<!--  <h2 style="text-align: center;">Spay/Neuter Status</h2>-->
+<!--  <canvas baseChart-->
+<!--          [data]="spayChartData"-->
+<!--          [options]="spayChartOptions"-->
+<!--          [type]="'doughnut'">-->
+<!--  </canvas>-->
+<!--</div>-->
+
+<!--<canvas baseChart-->
+<!--        #mainChart-->
+<!--        [data]="chartData"-->
+<!--        [options]="chartOptions"-->
+<!--        [type]="'bar'">-->
+<!--</canvas>-->
+
+<!--<canvas baseChart-->
+<!--        #spayChart="base-chart"-->
+<!--        [data]="spayChartData"-->
+<!--        [options]="spayChartOptions"-->
+<!--        [type]="'doughnut'">-->
+<!--</canvas>-->
+
+<section style="max-width: 900px; margin: 2rem auto; padding: 1rem;">
+  <h2 style="text-align: center; margin-bottom: 1rem;">Animal Type Distribution</h2>
+  <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <canvas baseChart
+            #mainChart="base-chart"
+            [data]="chartData"
+            [options]="chartOptions"
+            [type]="'bar'">
+    </canvas>
+  </div>
+</section>
+
+<section style="max-width: 600px; margin: 2rem auto; padding: 1rem;">
+  <h2 style="text-align: center; margin-bottom: 1rem;">Spay/Neuter Status</h2>
+  <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <canvas baseChart
+            #spayChart="base-chart"
+            [data]="spayChartData"
+            [options]="spayChartOptions"
+            [type]="'doughnut'">
+    </canvas>
+  </div>
+</section>
+

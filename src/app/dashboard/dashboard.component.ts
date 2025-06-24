@@ -13,6 +13,7 @@ import { AnimalService, Animal } from '../animal.service';
 })
 export class DashboardComponent implements OnInit {
   @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
+  @ViewChild('spayChart') spayChart: BaseChartDirective | undefined;
 
   chartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
@@ -20,6 +21,15 @@ export class DashboardComponent implements OnInit {
   };
 
   chartOptions: ChartConfiguration<'bar'>['options'] = {
+    responsive: true
+  };
+
+  spayChartData: ChartConfiguration<'doughnut'>['data'] = {
+    labels: ['Spayed/Neutered', 'Not Spayed/Neutered'],
+    datasets: [{ data: [0, 0], backgroundColor: ['#4caf50', '#f44336'] }]
+  };
+
+  spayChartOptions: ChartConfiguration<'doughnut'>['options'] = {
     responsive: true
   };
 
@@ -31,20 +41,35 @@ export class DashboardComponent implements OnInit {
 
       const counts: { [type: string]: number } = {};
 
+      let spayed = 0;
+      let notSpayed = 0;
+
       for (const animal of animals) {
         const type = animal.type || 'Unknown';
         counts[type] = (counts[type] || 0) + 1;
+
+        if (animal.spayed_neutered) {
+          spayed++;
+        } else {
+          notSpayed++;
+        }
       }
 
       this.chartData.labels = Object.keys(counts);
       this.chartData.datasets[0].data = Object.values(counts);
 
+      this.spayChartData.datasets[0].data = [spayed, notSpayed];
+
+      if (this.chart) this.chart.update();
+      setTimeout(() => {
+        if (this.spayChart) this.spayChart.update();
+      });
+
       console.log('Chart labels:', this.chartData.labels);
       console.log('Chart data:', this.chartData.datasets[0].data);
-
-      if (this.chart) {
-        this.chart.update();
-      }
+      console.log('Spay/neuter data:', this.spayChartData.datasets[0].data);
+      console.log('Spayed:', spayed);
+      console.log('Not Spayed:', notSpayed);
     });
   }
 }

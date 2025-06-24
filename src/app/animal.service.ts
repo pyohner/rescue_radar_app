@@ -6,6 +6,9 @@ export interface Animal {
   id: number;
   name: string;
   type: string;
+  spayed_neutered: boolean;
+  house_trained: boolean;
+  special_needs: boolean;
   // Add other fields as needed
 }
 
