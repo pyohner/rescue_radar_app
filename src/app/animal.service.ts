@@ -10,6 +10,7 @@ export interface Animal {
   house_trained: boolean;
   special_needs: boolean;
   published_at: string;
+  primary_breed: string;
   // Add other fields as needed
 }
 

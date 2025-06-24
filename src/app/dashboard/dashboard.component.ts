@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { NgChartsModule, BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 import { AnimalService, Animal } from '../animal.service';
+import {FormsModule} from '@angular/forms';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, NgChartsModule],
+  imports: [CommonModule, NgChartsModule, FormsModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -15,6 +16,7 @@ export class DashboardComponent implements OnInit {
   @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
   @ViewChild('spayChart') spayChart: BaseChartDirective | undefined;
   @ViewChild('typeOverTimeChart') typeOverTimeChart: BaseChartDirective | undefined;
+  @ViewChild('breedChart') breedChart: BaseChartDirective | undefined;
 
 
   chartData: ChartConfiguration<'bar'>['data'] = {
@@ -51,6 +53,71 @@ export class DashboardComponent implements OnInit {
       y: { title: { display: true, text: 'Count' }, beginAtZero: true }
     }
   };
+
+  allAnimals: Animal[] = [];
+
+
+  selectedAnimalType = 'Dog';
+  availableTypes = ['Dog', 'Cat', 'Rabbit', 'Bird']; // populate as needed
+
+  breedChartData: ChartConfiguration<'bar'>['data'] = {
+    labels: [],
+    datasets: []
+  };
+
+  breedChartOptions: ChartConfiguration<'bar'>['options'] = {
+    responsive: true,
+    plugins: {
+      title: { display: true, text: 'Breeds Over Past 30 Days' },
+      legend: { position: 'top' }
+    },
+    scales: {
+      x: { stacked: true, title: { display: true, text: 'Date' } },
+      y: { stacked: true, title: { display: true, text: 'Count' }, beginAtZero: true }
+    }
+  };
+
+  updateBreedChart(animals: Animal[]) {
+    const today = new Date();
+    const past30Days = [...Array(30)].map((_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - 29 + i);
+      return d.toISOString().slice(0, 10);
+    });
+
+    const filtered = animals.filter(a =>
+      a.type === this.selectedAnimalType &&
+      a.primary_breed &&
+      a.published_at &&
+      past30Days.includes(a.published_at.slice(0, 10))
+    );
+
+    const dateBreedCounts: { [date: string]: { [breed: string]: number } } = {};
+    const breedsSet = new Set<string>();
+
+    for (const date of past30Days) {
+      dateBreedCounts[date] = {};
+    }
+
+    for (const a of filtered) {
+      const date = a.published_at.slice(0, 10);
+      const breed = a.primary_breed || 'Unknown';
+      breedsSet.add(breed);
+      dateBreedCounts[date][breed] = (dateBreedCounts[date][breed] || 0) + 1;
+    }
+
+    this.breedChartData.labels = past30Days;
+
+    this.breedChartData.datasets = Array.from(breedsSet).map(breed => ({
+      label: breed,
+      data: past30Days.map(date => dateBreedCounts[date][breed] || 0),
+      stack: 'stack1'
+    }));
+
+    setTimeout(() => this.breedChart?.update());
+  }
+
+
 
   constructor(private animalService: AnimalService) {}
 
@@ -118,6 +185,16 @@ export class DashboardComponent implements OnInit {
       setTimeout(() => {
         this.typeOverTimeChart?.update();
       });
+
+      this.animalService.getAnimals().subscribe((animals: Animal[]) => {
+        this.allAnimals = animals;
+        // ...existing chart logic
+        this.updateBreedChart(animals);
+      });
+
+
+
+
 
 
       console.log('Chart labels:', this.chartData.labels);
