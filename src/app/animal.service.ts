@@ -11,6 +11,8 @@ export interface Animal {
   special_needs: boolean;
   published_at: string;
   primary_breed: string;
+  organization_id: string;
+  organization_name: string;
   // Add other fields as needed
 }
 

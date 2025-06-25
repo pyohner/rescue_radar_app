@@ -17,6 +17,7 @@ export class DashboardComponent implements OnInit {
   @ViewChild('spayChart') spayChart: BaseChartDirective | undefined;
   @ViewChild('typeOverTimeChart') typeOverTimeChart: BaseChartDirective | undefined;
   @ViewChild('breedChart') breedChart: BaseChartDirective | undefined;
+  @ViewChild('orgStackedChart') orgStackedChart: BaseChartDirective | undefined;
 
 
   chartData: ChartConfiguration<'bar'>['data'] = {
@@ -30,7 +31,7 @@ export class DashboardComponent implements OnInit {
 
   spayChartData: ChartConfiguration<'doughnut'>['data'] = {
     labels: ['Spayed/Neutered', 'Not Spayed/Neutered'],
-    datasets: [{ data: [0, 0], backgroundColor: ['#4caf50', '#f44336'] }]
+    datasets: [{ data: [0, 0] }]
   };
 
   spayChartOptions: ChartConfiguration<'doughnut'>['options'] = {
@@ -56,26 +57,39 @@ export class DashboardComponent implements OnInit {
 
   allAnimals: Animal[] = [];
 
-
   selectedAnimalType = 'Dog';
   availableTypes = ['Dog', 'Cat', 'Rabbit', 'Bird']; // populate as needed
 
-  breedChartData: ChartConfiguration<'bar'>['data'] = {
+  breedChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
     datasets: []
   };
 
-  breedChartOptions: ChartConfiguration<'bar'>['options'] = {
+  breedChartOptions: ChartConfiguration<'line'>['options'] = {
     responsive: true,
     plugins: {
       title: { display: true, text: 'Breeds Over Past 30 Days' },
-      legend: { position: 'top' }
+      legend: { position: 'bottom' }
     },
     scales: {
-      x: { stacked: true, title: { display: true, text: 'Date' } },
-      y: { stacked: true, title: { display: true, text: 'Count' }, beginAtZero: true }
+      x: {
+        title: { display: true, text: 'Date' }
+      },
+      y: {
+        position: 'left',
+        title: { display: true, text: 'Breed Count' },
+        beginAtZero: true
+      },
+      y1: {
+        position: 'right',
+        grid: { drawOnChartArea: false },
+        title: { display: true, text: 'Total Daily Count' },
+        beginAtZero: true
+      }
     }
   };
+
+  orgNameMap: { [id: string]: string } = {};
 
   updateBreedChart(animals: Animal[]) {
     const today = new Date();
@@ -93,10 +107,12 @@ export class DashboardComponent implements OnInit {
     );
 
     const dateBreedCounts: { [date: string]: { [breed: string]: number } } = {};
+    const totalPerDay: { [date: string]: number } = {};
     const breedsSet = new Set<string>();
 
     for (const date of past30Days) {
       dateBreedCounts[date] = {};
+      totalPerDay[date] = 0;
     }
 
     for (const a of filtered) {
@@ -104,18 +120,118 @@ export class DashboardComponent implements OnInit {
       const breed = a.primary_breed || 'Unknown';
       breedsSet.add(breed);
       dateBreedCounts[date][breed] = (dateBreedCounts[date][breed] || 0) + 1;
+      totalPerDay[date]++;
     }
 
     this.breedChartData.labels = past30Days;
 
-    this.breedChartData.datasets = Array.from(breedsSet).map(breed => ({
+    const breedDatasets = Array.from(breedsSet).map(breed => ({
       label: breed,
       data: past30Days.map(date => dateBreedCounts[date][breed] || 0),
-      stack: 'stack1'
+      fill: false,
+      tension: 0.3,
+      pointRadius: 2,
+      yAxisID: 'y' // left axis
     }));
+
+    const totalDataset = {
+      label: 'Total Breeds',
+      data: past30Days.map(date => totalPerDay[date]),
+      borderDash: [5, 5],
+      tension: 0.2,
+      fill: true,
+      backgroundColor: 'rgba(0, 0, 0, 0.1)', // semi-transparent black fill
+      borderColor: '#000',
+      yAxisID: 'y1' // right axis
+    };
+
+    this.breedChartData.datasets = [...breedDatasets, totalDataset];
 
     setTimeout(() => this.breedChart?.update());
   }
+
+
+  orgStackedChartData: ChartConfiguration<'bar'>['data'] = {
+    labels: [],
+    datasets: []
+  };
+
+  orgStackedChartOptions: ChartConfiguration<'bar'>['options'] = {
+    indexAxis: 'y', // horizontal
+    responsive: true,
+    plugins: {
+      title: { display: true, text: 'Top 20 Organizations by Animal Type (Past 30 Days)' },
+      legend: { position: 'top' }
+    },
+    scales: {
+      x: { stacked: true, title: { display: true, text: 'Number of Animals' }, beginAtZero: true },
+      y: {
+        stacked: true,
+        title: { display: true, text: 'Organization' },
+        ticks: {
+          autoSkip: false,
+          font: { size: 11 },
+          callback: (value, index) => {
+            // Use the actual label from the chart
+            const label = this.orgStackedChartData.labels?.[index];
+            return typeof label === 'string' ? label : '';
+          }
+        }
+      }
+    }
+  };
+
+
+  updateOrgStackedChart(animals: Animal[]) {
+    const today = new Date();
+    const past30 = new Set(
+      [...Array(30)].map((_, i) => {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
+        return d.toISOString().slice(0, 10);
+      })
+    );
+
+    const orgTypeCounts: { [org: string]: { [type: string]: number } } = {};
+    const totalPerOrg: { [org: string]: number } = {};
+    const typeSet = new Set<string>();
+
+    for (const a of animals) {
+      const date = a.published_at?.slice(0, 10);
+      if (!date || !past30.has(date)) continue;
+
+      const org = a.organization_id || 'Unknown';
+      const type = a.type || 'Unknown';
+
+      typeSet.add(type);
+
+      if (!orgTypeCounts[org]) {
+        orgTypeCounts[org] = {};
+      }
+
+      orgTypeCounts[org][type] = (orgTypeCounts[org][type] || 0) + 1;
+      totalPerOrg[org] = (totalPerOrg[org] || 0) + 1;
+    }
+
+    // Sort orgs by total animals, descending
+    const topOrgs = Object.entries(totalPerOrg)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20)
+      .map(([org, _]: [string, number]) => org);
+
+    this.orgStackedChartData.labels = topOrgs.map(id => this.orgNameMap[id] || id);
+
+
+    this.orgStackedChartData.datasets = Array.from(typeSet).map(type => ({
+      label: type,
+      data: topOrgs.map(org => orgTypeCounts[org]?.[type] || 0),
+      stack: 'stack1'
+    }));
+
+    setTimeout(() => this.orgStackedChart?.update());
+  }
+
+
 
 
 
@@ -124,9 +240,15 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.animalService.getAnimals().subscribe((animals: Animal[]) => {
       console.log('Fetched animals:', animals);
+      this.allAnimals = animals;
+      for (const a of animals) {
+        if (a.organization_id && a.organization_name) {
+          this.orgNameMap[a.organization_id] = a.organization_name;
+        }
+      }
 
+      // === Animal Type Count (Bar Chart) ===
       const counts: { [type: string]: number } = {};
-
       let spayed = 0;
       let notSpayed = 0;
 
@@ -144,13 +266,13 @@ export class DashboardComponent implements OnInit {
       this.chartData.labels = Object.keys(counts);
       this.chartData.datasets[0].data = Object.values(counts);
 
-      this.spayChartData.datasets[0].data = [spayed, notSpayed];
-
       if (this.chart) this.chart.update();
-      setTimeout(() => {
-        if (this.spayChart) this.spayChart.update();
-      });
 
+      // === Spay/Neuter Doughnut Chart ===
+      this.spayChartData.datasets[0].data = [spayed, notSpayed];
+      setTimeout(() => this.spayChart?.update());
+
+      // === Animal Types Over Time (Line Chart) ===
       const dateTypeCounts: { [date: string]: { [type: string]: number } } = {};
       const typesSet = new Set<string>();
 
@@ -167,36 +289,25 @@ export class DashboardComponent implements OnInit {
         dateTypeCounts[date][type] = (dateTypeCounts[date][type] || 0) + 1;
       }
 
-// Sorted dates
       const sortedDates = Object.keys(dateTypeCounts).sort();
       this.typeOverTimeData.labels = sortedDates;
 
-      this.typeOverTimeData.datasets = Array.from(typesSet).map(type => {
-        return {
-          label: type,
-          data: sortedDates.map(date => dateTypeCounts[date][type] || 0),
-          fill: false,
-          tension: 0.3
-        };
+      this.typeOverTimeData.datasets = Array.from(typesSet).map(type => ({
+        label: type,
+        data: sortedDates.map(date => dateTypeCounts[date][type] || 0),
+        fill: false,
+        tension: 0.3
+      }));
 
+      setTimeout(() => this.typeOverTimeChart?.update());
 
-      });
+      // === Breeds Over Time (Stacked Bar) ===
+      this.updateBreedChart(animals);
 
-      setTimeout(() => {
-        this.typeOverTimeChart?.update();
-      });
+      // === Animals by Organization and Type (Horizontal Stacked Bar) ===
+      this.updateOrgStackedChart(animals);
 
-      this.animalService.getAnimals().subscribe((animals: Animal[]) => {
-        this.allAnimals = animals;
-        // ...existing chart logic
-        this.updateBreedChart(animals);
-      });
-
-
-
-
-
-
+      // === Logging for Debugging ===
       console.log('Chart labels:', this.chartData.labels);
       console.log('Chart data:', this.chartData.datasets[0].data);
       console.log('Spay/neuter data:', this.spayChartData.datasets[0].data);
@@ -204,4 +315,5 @@ export class DashboardComponent implements OnInit {
       console.log('Not Spayed:', notSpayed);
     });
   }
+
 }
