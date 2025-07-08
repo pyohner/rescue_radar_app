@@ -1,8 +1,8 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { NgChartsModule, BaseChartDirective } from 'ng2-charts';
-import { ChartConfiguration } from 'chart.js';
-import { AnimalService, Animal } from '../animal.service';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {NgChartsModule, BaseChartDirective} from 'ng2-charts';
+import {ChartConfiguration} from 'chart.js';
+import {AnimalService, Animal} from '../animal.service';
 import {FormsModule} from '@angular/forms';
 
 @Component({
@@ -22,7 +22,7 @@ export class DashboardComponent implements OnInit {
 
   chartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
-    datasets: [{ data: [], label: 'Animal Type Count' }]
+    datasets: [{data: [], label: 'Animal Type Count'}]
   };
 
   chartOptions: ChartConfiguration<'bar'>['options'] = {
@@ -31,7 +31,7 @@ export class DashboardComponent implements OnInit {
 
   spayChartData: ChartConfiguration<'doughnut'>['data'] = {
     labels: ['Spayed/Neutered', 'Not Spayed/Neutered'],
-    datasets: [{ data: [0, 0] }]
+    datasets: [{data: [0, 0]}]
   };
 
   spayChartOptions: ChartConfiguration<'doughnut'>['options'] = {
@@ -46,12 +46,12 @@ export class DashboardComponent implements OnInit {
   typeOverTimeOptions: ChartConfiguration<'line'>['options'] = {
     responsive: true,
     plugins: {
-      legend: { position: 'top' },
-      title: { display: true, text: 'Animal Types Over Time' }
+      legend: {position: 'top'},
+      title: {display: true, text: 'Animal Types Over Time'}
     },
     scales: {
-      x: { title: { display: true, text: 'Date' } },
-      y: { title: { display: true, text: 'Count' }, beginAtZero: true }
+      x: {title: {display: true, text: 'Date'}},
+      y: {title: {display: true, text: 'Count'}, beginAtZero: true}
     }
   };
 
@@ -68,22 +68,22 @@ export class DashboardComponent implements OnInit {
   breedChartOptions: ChartConfiguration<'line'>['options'] = {
     responsive: true,
     plugins: {
-      title: { display: true, text: 'Breeds Over Past 30 Days' },
-      legend: { position: 'bottom' }
+      title: {display: true, text: 'Breeds Over Past 30 Days'},
+      legend: {position: 'bottom'}
     },
     scales: {
       x: {
-        title: { display: true, text: 'Date' }
+        title: {display: true, text: 'Date'}
       },
       y: {
         position: 'left',
-        title: { display: true, text: 'Breed Count' },
+        title: {display: true, text: 'Breed Count'},
         beginAtZero: true
       },
       y1: {
         position: 'right',
-        grid: { drawOnChartArea: false },
-        title: { display: true, text: 'Total Daily Count' },
+        grid: {drawOnChartArea: false},
+        title: {display: true, text: 'Total Daily Count'},
         beginAtZero: true
       }
     }
@@ -160,17 +160,17 @@ export class DashboardComponent implements OnInit {
     indexAxis: 'y', // horizontal
     responsive: true,
     plugins: {
-      title: { display: true, text: 'Top 20 Organizations by Animal Type (Past 30 Days)' },
-      legend: { position: 'top' }
+      title: {display: true, text: 'Top 20 Organizations by Animal Type (Past 30 Days)'},
+      legend: {position: 'top'}
     },
     scales: {
-      x: { stacked: true, title: { display: true, text: 'Number of Animals' }, beginAtZero: true },
+      x: {stacked: true, title: {display: true, text: 'Number of Animals'}, beginAtZero: true},
       y: {
         stacked: true,
-        title: { display: true, text: 'Organization' },
+        title: {display: true, text: 'Organization'},
         ticks: {
           autoSkip: false,
-          font: { size: 11 },
+          font: {size: 11},
           callback: (value, index) => {
             // Use the actual label from the chart
             const label = this.orgStackedChartData.labels?.[index];
@@ -232,10 +232,8 @@ export class DashboardComponent implements OnInit {
   }
 
 
-
-
-
-  constructor(private animalService: AnimalService) {}
+  constructor(private animalService: AnimalService) {
+  }
 
   ngOnInit(): void {
     this.animalService.getAnimals().subscribe((animals: Animal[]) => {
