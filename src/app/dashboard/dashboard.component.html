@@ -1,76 +1,141 @@
-<section style="max-width: 900px; margin: 2rem auto; padding: 1rem;">
-  <h2 style="text-align: center; margin-bottom: 1rem;">Animal Type Distribution</h2>
-  <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-    <canvas baseChart
-            #mainChart="base-chart"
-            [data]="chartData"
-            [options]="chartOptions"
-            [type]="'bar'">
-    </canvas>
+<header style="display: flex; align-items: center; gap: 20px; padding: 1.5rem 2rem;">
+  <img src="rescue_radar_logo.png" alt="Rescue Radar Logo" style="height: 60px;">
+  <div>
+    <h1 style="margin: 0; font-size: 1.8rem; color: #222;">Rescue Radar</h1>
+    <p style="margin: 4px 0 0; color: #555; font-size: 1rem;">
+      Daily insights into animal rescues in the Orlando area
+    </p>
   </div>
-</section>
+</header>
 
-<section style="max-width: 600px; margin: 2rem auto; padding: 1rem;">
-  <h2 style="text-align: center; margin-bottom: 1rem;">Spay/Neuter Status</h2>
-  <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-    <canvas baseChart
-            #spayChart="base-chart"
-            [data]="spayChartData"
-            [options]="spayChartOptions"
-            [type]="'doughnut'">
-    </canvas>
-  </div>
-</section>
+<mat-tab-group>
+  <mat-tab label="Today's Rescues">
+    <section style="max-width: 900px; margin: 2rem auto; padding: 1rem;">
+      <h2 style="text-align: center;">Today's Rescues ({{ todaysRescues?.date }})</h2>
 
-<section style="max-width: 1000px; margin: 2rem auto; padding: 1rem;">
-  <h2 style="text-align: center; margin-bottom: 1rem;">Animal Types Over Time</h2>
-  <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-    <canvas baseChart
-            #typeOverTimeChart="base-chart"
-            [data]="typeOverTimeData"
-            [options]="typeOverTimeOptions"
-            [type]="'line'">
-    </canvas>
+      <div *ngIf="todaysRescues" style="margin-top: 1rem;">
+        <p>New rescues listed today: <strong>{{ todaysRescues.total }}</strong></p>
 
-  </div>
-</section>
+        <h3 style="margin-top: 1rem;">Animal Type Breakdown</h3>
 
-<section style="max-width: 1000px; margin: 2rem auto;">
-  <h2 style="text-align: center;">Breeds Over Past 30 Days</h2>
+        <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1.5rem; margin-top: 1rem;">
+          <!-- Chart on the left -->
+          <div style="flex: 0 0 150px; max-width: 150px;">
+            <canvas baseChart
+                    [data]="todaysTypeChartData"
+                    [options]="todaysTypeChartOptions"
+                    [type]="'doughnut'">
+            </canvas>
+          </div>
 
-  <div style="text-align: center; margin-bottom: 1rem;">
-    <label for="type-select">Animal Type:</label>
-    <select id="type-select" [(ngModel)]="selectedAnimalType" (change)="updateBreedChart(allAnimals)">
-      <option *ngFor="let type of availableTypes" [value]="type">{{ type }}</option>
-    </select>
-  </div>
+          <!-- Cards on the right -->
+          <div class="dashboard" style="flex: 1;">
+            <div class="card" *ngFor="let type of typeKeys">
+              <h4>{{ type }}</h4>
+              <p>{{ todaysRescues.typeBreakdown[type] }} animals</p>
+            </div>
+          </div>
+        </div>
 
-  <div class="breed-chart-wrapper" style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-    <canvas baseChart
-            #breedChart="base-chart"
-            [data]="breedChartData"
-            [options]="breedChartOptions"
-            [type]="'line'">
-    </canvas>
-  </div>
+        <h3 style="margin-top: 1.5rem;">Top Organization: {{ todaysRescues.topOrganization.name }}</h3>
+        <p>Animals listed: {{ todaysRescues.topOrganization.total }}</p>
 
-  <div class="custom-legend">
-    <div *ngFor="let item of customLegendLabels" class="legend-item">
-      <span class="legend-color" [style.backgroundColor]="item.color"></span>
-      {{ item.label }}
-    </div>
-  </div>
+        <h4>Breakdown by Type:</h4>
+        <ul>
+          <li *ngFor="let type of topOrgTypeKeys">
+            {{ type }}: {{ todaysRescues.topOrganization.typeBreakdown[type] }}
+          </li>
+        </ul>
+      </div>
 
-</section>
+      <div *ngIf="!todaysRescues">
+        <p>Loading today's rescues...</p>
+      </div>
+    </section>
+  </mat-tab>
 
-<section style="max-width: 1000px; margin: 2rem auto;">
-  <h2 style="text-align: center;">Top 20 Organizations by Animal Type (Past 30 Days)</h2>
-  <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-    <canvas baseChart
-            #orgStackedChart="base-chart"
-            [data]="orgStackedChartData"
-            [options]="orgStackedChartOptions"
-            [type]="'bar'">
-    </canvas>
-  </div>
-</section>
+  <mat-tab label="Animal Type Distribution">
+    <section style="max-width: 900px; margin: 2rem auto; padding: 1rem;">
+      <h2 style="text-align: center; margin-bottom: 1rem;">Animal Type Distribution</h2>
+      <p style="text-align: center; margin-bottom: 1rem;">Total animal counts since June 4, 2025</p>
+      <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <canvas baseChart
+                #mainChart="base-chart"
+                [data]="chartData"
+                [options]="chartOptions"
+                [type]="'bar'">
+        </canvas>
+      </div>
+    </section>
+  </mat-tab>
+
+  <mat-tab label="Spay/Neuter Status">
+    <section style="max-width: 600px; margin: 2rem auto; padding: 1rem;">
+      <h2 style="text-align: center; margin-bottom: 1rem;">Spay/Neuter Status</h2>
+      <p style="text-align: center; margin-bottom: 1rem;">Overall distribution since June 4, 2025</p>
+      <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <canvas baseChart
+                #spayChart="base-chart"
+                [data]="spayChartData"
+                [options]="spayChartOptions"
+                [type]="'doughnut'">
+        </canvas>
+      </div>
+    </section>
+  </mat-tab>
+
+  <mat-tab label="Types Over Time">
+    <section style="max-width: 1000px; margin: 2rem auto; padding: 1rem;">
+      <h2 style="text-align: center; margin-bottom: 1rem;">Animal Types Over Time</h2>
+      <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <canvas baseChart
+                #typeOverTimeChart="base-chart"
+                [data]="typeOverTimeData"
+                [options]="typeOverTimeOptions"
+                [type]="'line'">
+        </canvas>
+      </div>
+    </section>
+  </mat-tab>
+
+  <mat-tab label="Breed Trends">
+    <section style="max-width: 1000px; margin: 2rem auto;">
+      <h2 style="text-align: center;">Breeds Over Past 30 Days</h2>
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <label for="type-select">Animal Type:</label>
+        <select id="type-select" [(ngModel)]="selectedAnimalType" (change)="updateBreedChart(allAnimals)">
+          <option *ngFor="let type of availableTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+      <div class="breed-chart-wrapper"
+           style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <canvas baseChart
+                #breedChart="base-chart"
+                [data]="breedChartData"
+                [options]="breedChartOptions"
+                [type]="'line'">
+        </canvas>
+      </div>
+      <div class="custom-legend">
+        <div *ngFor="let item of customLegendLabels" class="legend-item">
+          <span class="legend-color" [style.backgroundColor]="item.color"></span>
+          {{ item.label }}
+        </div>
+      </div>
+    </section>
+  </mat-tab>
+
+  <mat-tab label="Top Organizations">
+    <section style="max-width: 1000px; margin: 2rem auto;">
+      <h2 style="text-align: center;">Top 20 Organizations by Animal Type (Past 30 Days)</h2>
+      <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <canvas baseChart
+                #orgStackedChart="base-chart"
+                [data]="orgStackedChartData"
+                [options]="orgStackedChartOptions"
+                [type]="'bar'">
+        </canvas>
+      </div>
+    </section>
+  </mat-tab>
+</mat-tab-group>

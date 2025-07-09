@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
 
 export interface Animal {
   id: number;
@@ -16,15 +16,32 @@ export interface Animal {
   // Add other fields as needed
 }
 
+export interface TodaysRescues {
+  date: string;
+  total: number;
+  typeBreakdown: { [type: string]: number };
+  topOrganization: {
+    id: string;
+    name: string;
+    total: number;
+    typeBreakdown: { [type: string]: number };
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class AnimalService {
-  private apiUrl = 'http://localhost:5000/api/animals';
+  private apiBaseUrl = 'http://localhost:5000/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+  }
 
   getAnimals(): Observable<Animal[]> {
-    return this.http.get<Animal[]>(this.apiUrl);
+    return this.http.get<Animal[]>(`${this.apiBaseUrl}/animals`);
+  }
+
+  getTodaysRescues(): Observable<TodaysRescues> {
+    return this.http.get<TodaysRescues>(`${this.apiBaseUrl}/animals/todays-rescues`);
   }
 }

@@ -74,3 +74,25 @@ th {
     text-align: center;
   }
 }
+
+.mat-tab-group {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin: 2rem auto;
+  max-width: 1200px;
+  padding: 1rem;
+}
+
+.mat-tab-label {
+  font-weight: 600;
+  color: #555;
+}
+
+.mat-tab-label.mat-tab-label-active {
+  color: #1976d2;
+}
+
+.mat-ink-bar {
+  background-color: #1976d2;
+}

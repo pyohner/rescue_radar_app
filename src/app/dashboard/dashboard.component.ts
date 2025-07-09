@@ -1,5 +1,6 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {MatTabsModule} from '@angular/material/tabs';
+import {CommonModule, NgOptimizedImage} from '@angular/common';
 import {NgChartsModule, BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration} from 'chart.js';
 import {AnimalService, Animal} from '../animal.service';
@@ -8,7 +9,7 @@ import {FormsModule} from '@angular/forms';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, NgChartsModule, FormsModule],
+  imports: [CommonModule, NgChartsModule, FormsModule, MatTabsModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -35,7 +36,22 @@ export class DashboardComponent implements OnInit {
   };
 
   spayChartOptions: ChartConfiguration<'doughnut'>['options'] = {
-    responsive: true
+    responsive: true,
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: (context: any) => {
+            const total = context.chart.data.datasets[0].data.reduce((a: number, b: number) => a + b, 0);
+            const value = context.raw;
+            const percent = ((value / total) * 100).toFixed(1);
+            return `${context.label}: ${percent}%`;
+          }
+        }
+      },
+      legend: {
+        position: 'top'
+      }
+    }
   };
 
   typeOverTimeData: ChartConfiguration<'line'>['data'] = {
@@ -75,22 +91,22 @@ export class DashboardComponent implements OnInit {
       }
     },
     plugins: {
-      title: { display: true, text: 'Breeds Over Past 30 Days' },
-      legend: { display: false }
+      title: {display: true, text: 'Breeds Over Past 30 Days'},
+      legend: {display: false}
     },
     scales: {
       x: {
-        title: { display: true, text: 'Date' }
+        title: {display: true, text: 'Date'}
       },
       y: {
         position: 'left',
-        title: { display: true, text: 'Breed Count' },
+        title: {display: true, text: 'Breed Count'},
         beginAtZero: true
       },
       y1: {
         position: 'right',
-        grid: { drawOnChartArea: false },
-        title: { display: true, text: 'Total Daily Count' },
+        grid: {drawOnChartArea: false},
+        title: {display: true, text: 'Total Daily Count'},
         beginAtZero: true
       }
     }
@@ -156,11 +172,6 @@ export class DashboardComponent implements OnInit {
     };
 
     this.breedChartData.datasets = [...breedDatasets, totalDataset];
-
-    // this.customLegendLabels = this.breedChartData.datasets.map(ds => ({
-    //   label: ds.label || '',
-    //   color: typeof ds.borderColor === 'string' ? ds.borderColor : '#000'
-    // }));
 
     setTimeout(() => {
       this.breedChart?.update();
@@ -265,7 +276,46 @@ export class DashboardComponent implements OnInit {
   constructor(private animalService: AnimalService) {
   }
 
+  todaysRescues: any = null;
+  typeKeys: string[] = [];
+  topOrgTypeKeys: string[] = [];
+  todaysTypeChartData: any;
+  todaysTypeChartOptions: any;
+
+  loadTodaysRescues() {
+    this.animalService.getTodaysRescues().subscribe({
+      next: (data) => {
+        this.todaysRescues = data;
+        this.typeKeys = Object.keys(data.typeBreakdown);
+        this.topOrgTypeKeys = Object.keys(data.topOrganization.typeBreakdown);
+
+        const counts = this.typeKeys.map(key => data.typeBreakdown[key]);
+        const colors = ['#42A5F5', '#66BB6A', '#FFA726', '#AB47BC', '#FF7043', '#26C6DA'];
+
+        this.todaysTypeChartData = {
+          labels: this.typeKeys,
+          datasets: [{
+            data: counts,
+            backgroundColor: colors
+          }]
+        };
+
+        this.todaysTypeChartOptions = {
+          responsive: true,
+          plugins: {
+            legend: {display: false}
+          }
+        };
+      },
+      error: (err) => {
+        console.error("Failed to load today's rescues:", err);
+      }
+    });
+  }
+
   ngOnInit(): void {
+    this.loadTodaysRescues();
+
     this.animalService.getAnimals().subscribe((animals: Animal[]) => {
       console.log('Fetched animals:', animals);
       this.allAnimals = animals;
