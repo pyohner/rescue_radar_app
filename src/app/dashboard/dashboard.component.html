@@ -45,7 +45,7 @@
     </select>
   </div>
 
-  <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+  <div class="breed-chart-wrapper" style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
     <canvas baseChart
             #breedChart="base-chart"
             [data]="breedChartData"
@@ -53,6 +53,14 @@
             [type]="'line'">
     </canvas>
   </div>
+
+  <div class="custom-legend">
+    <div *ngFor="let item of customLegendLabels" class="legend-item">
+      <span class="legend-color" [style.backgroundColor]="item.color"></span>
+      {{ item.label }}
+    </div>
+  </div>
+
 </section>
 
 <section style="max-width: 1000px; margin: 2rem auto;">

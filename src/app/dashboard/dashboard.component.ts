@@ -67,27 +67,36 @@ export class DashboardComponent implements OnInit {
 
   breedChartOptions: ChartConfiguration<'line'>['options'] = {
     responsive: true,
+    maintainAspectRatio: false,
+    layout: {
+      padding: {
+        top: 10,
+        bottom: 10
+      }
+    },
     plugins: {
-      title: {display: true, text: 'Breeds Over Past 30 Days'},
-      legend: {position: 'bottom'}
+      title: { display: true, text: 'Breeds Over Past 30 Days' },
+      legend: { display: false }
     },
     scales: {
       x: {
-        title: {display: true, text: 'Date'}
+        title: { display: true, text: 'Date' }
       },
       y: {
         position: 'left',
-        title: {display: true, text: 'Breed Count'},
+        title: { display: true, text: 'Breed Count' },
         beginAtZero: true
       },
       y1: {
         position: 'right',
-        grid: {drawOnChartArea: false},
-        title: {display: true, text: 'Total Daily Count'},
+        grid: { drawOnChartArea: false },
+        title: { display: true, text: 'Total Daily Count' },
         beginAtZero: true
       }
     }
   };
+
+  customLegendLabels: { label: string, color: string }[] = [];
 
   orgNameMap: { [id: string]: string } = {};
 
@@ -131,8 +140,9 @@ export class DashboardComponent implements OnInit {
       fill: false,
       tension: 0.3,
       pointRadius: 2,
-      yAxisID: 'y' // left axis
+      yAxisID: 'y'
     }));
+
 
     const totalDataset = {
       label: 'Total Breeds',
@@ -147,9 +157,29 @@ export class DashboardComponent implements OnInit {
 
     this.breedChartData.datasets = [...breedDatasets, totalDataset];
 
-    setTimeout(() => this.breedChart?.update());
-  }
+    // this.customLegendLabels = this.breedChartData.datasets.map(ds => ({
+    //   label: ds.label || '',
+    //   color: typeof ds.borderColor === 'string' ? ds.borderColor : '#000'
+    // }));
 
+    setTimeout(() => {
+      this.breedChart?.update();
+
+      const chart = this.breedChart?.chart;
+      if (chart) {
+        this.customLegendLabels = chart.data.datasets.map((ds: any, i: number) => {
+          const meta = chart.getDatasetMeta(i);
+          const color = meta?.dataset?.options?.['borderColor'] || ds.borderColor || '#000';
+
+          return {
+            label: ds.label || '',
+            color: color
+          };
+        });
+      }
+    });
+
+  }
 
   orgStackedChartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
