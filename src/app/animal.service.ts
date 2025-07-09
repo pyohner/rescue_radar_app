@@ -1,6 +1,8 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
+import {environment} from '../environments/environment';
+
 
 export interface Animal {
   id: number;
@@ -32,7 +34,7 @@ export interface TodaysRescues {
   providedIn: 'root'
 })
 export class AnimalService {
-  private apiBaseUrl = 'http://localhost:5000/api';
+  private apiBaseUrl = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {
   }
