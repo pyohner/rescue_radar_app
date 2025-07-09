@@ -336,11 +336,11 @@ export class DashboardComponent implements OnInit {
       this.updateOrgStackedChart(animals);
 
       // === Logging for Debugging ===
-      console.log('Chart labels:', this.chartData.labels);
-      console.log('Chart data:', this.chartData.datasets[0].data);
-      console.log('Spay/neuter data:', this.spayChartData.datasets[0].data);
-      console.log('Spayed:', spayed);
-      console.log('Not Spayed:', notSpayed);
+      // console.log('Chart labels:', this.chartData.labels);
+      // console.log('Chart data:', this.chartData.datasets[0].data);
+      // console.log('Spay/neuter data:', this.spayChartData.datasets[0].data);
+      // console.log('Spayed:', spayed);
+      // console.log('Not Spayed:', notSpayed);
     });
   }
 
