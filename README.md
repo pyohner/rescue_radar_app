@@ -39,8 +39,8 @@ export const environment = {
 
 ## 💬 Related Repositories
 
-- [Rescue Radar API](https://github.com/pyohner/rescue-radar-api)
-- [Petfinder Data Collector](https://github.com/pyohner/petfinder_data_collector)
+- [Rescue Radar API](https://github.com/pyohner/rescue_radar_api)
+- [Petfinder Data Collector](https://github.com/pyohner/petfinder-data-collector)
 
 ---
 
