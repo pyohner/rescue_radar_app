@@ -73,3 +73,7 @@ Make sure `apiBaseUrl` in `environment.ts` points to the backend URL:
 ```typescript
 apiBaseUrl: 'http://localhost:5000/api'
 ```
+
+## 📄 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
