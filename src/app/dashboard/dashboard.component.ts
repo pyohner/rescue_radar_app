@@ -156,6 +156,7 @@ export class DashboardComponent implements OnInit {
       fill: false,
       tension: 0.3,
       pointRadius: 2,
+      borderWidth: 1.5,
       yAxisID: 'y'
     }));
 
@@ -163,11 +164,12 @@ export class DashboardComponent implements OnInit {
     const totalDataset = {
       label: 'Total Breeds',
       data: past30Days.map(date => totalPerDay[date]),
-      borderDash: [5, 5],
+      // borderDash: [5, 5],
       tension: 0.2,
       fill: true,
       backgroundColor: 'rgba(0, 0, 0, 0.1)', // semi-transparent black fill
       borderColor: '#000',
+      pointRadius: 0,
       yAxisID: 'y1' // right axis
     };
 
