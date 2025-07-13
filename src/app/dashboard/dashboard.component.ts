@@ -1,6 +1,6 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {MatTabsModule} from '@angular/material/tabs';
-import {CommonModule, NgOptimizedImage} from '@angular/common';
+import {CommonModule} from '@angular/common';
 import {NgChartsModule, BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration} from 'chart.js';
 import {AnimalService, Animal} from '../animal.service';
@@ -74,7 +74,7 @@ export class DashboardComponent implements OnInit {
   allAnimals: Animal[] = [];
 
   selectedAnimalType = 'Dog';
-  availableTypes = ['Dog', 'Cat', 'Rabbit', 'Bird']; // populate as needed
+  availableTypes = ['Dog', 'Cat', 'Rabbit', 'Bird', 'Small & Furry', 'Scales, Fins & Other', 'Horse', 'Barnyard']; // populate as needed
 
   breedChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
