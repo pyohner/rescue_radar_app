@@ -54,6 +54,96 @@ export class DashboardComponent implements OnInit {
     }
   };
 
+  timeframes = [
+    {label: 'All Time', value: 'all'},
+    {label: 'Past 10 Years', value: '10y'},
+    {label: 'Past 5 Years', value: '5y'},
+    {label: 'Past 2 Years', value: '2y'},
+    {label: 'Past 1 Year', value: '1y'},
+    {label: 'YTD', value: 'ytd'},
+    {label: 'Past 6 Months', value: '6m'},
+    {label: 'Past 3 Months', value: '3m'},
+    {label: 'Past 1 Month', value: '1m'},
+    {label: 'Past 1 Week', value: '1w'}
+  ];
+  selectedTimeframe = 'all';
+
+  filterAnimalsByTimeframe(animals: Animal[], timeframe: string): Animal[] {
+    if (timeframe === 'all') return animals;
+
+    const now = new Date();
+    let cutoff: Date;
+
+    switch (timeframe) {
+      case '10y':
+        cutoff = new Date(now.setFullYear(now.getFullYear() - 10));
+        break;
+      case '5y':
+        cutoff = new Date(now.setFullYear(now.getFullYear() - 5));
+        break;
+      case '2y':
+        cutoff = new Date(now.setFullYear(now.getFullYear() - 2));
+        break;
+      case '1y':
+        cutoff = new Date(now.setFullYear(now.getFullYear() - 1));
+        break;
+      case 'ytd':
+        cutoff = new Date(now.getFullYear(), 0, 1);
+        break;  // Jan 1 of this year
+      case '6m':
+        cutoff = new Date(now.setMonth(now.getMonth() - 6));
+        break;
+      case '3m':
+        cutoff = new Date(now.setMonth(now.getMonth() - 3));
+        break;
+      case '1m':
+        cutoff = new Date(now.setMonth(now.getMonth() - 1));
+        break;
+      case '1w':
+        cutoff = new Date(now.setDate(now.getDate() - 7));
+        break;
+      default:
+        return animals;
+    }
+
+    return animals.filter(a => {
+      const publishedAt = a.published_at ? new Date(a.published_at) : null;
+      return publishedAt && publishedAt >= cutoff;
+    });
+  }
+
+  updateTypeOverTimeChart() {
+    const animals = this.filterAnimalsByTimeframe(this.allAnimals, this.selectedTimeframe);
+    const dateTypeCounts: { [date: string]: { [type: string]: number } } = {};
+    const typesSet = new Set<string>();
+
+    for (const animal of animals) {
+      const date = animal.published_at?.slice(0, 10);
+      const type = animal.type || 'Unknown';
+
+      typesSet.add(type);
+
+      if (!dateTypeCounts[date]) {
+        dateTypeCounts[date] = {};
+      }
+
+      dateTypeCounts[date][type] = (dateTypeCounts[date][type] || 0) + 1;
+    }
+
+    const sortedDates = Object.keys(dateTypeCounts).sort();
+    this.typeOverTimeData.labels = sortedDates;
+
+    this.typeOverTimeData.datasets = Array.from(typesSet).map(type => ({
+      label: type,
+      data: sortedDates.map(date => dateTypeCounts[date][type] || 0),
+      fill: false,
+      tension: 0.3
+    }));
+
+    setTimeout(() => this.typeOverTimeChart?.update());
+  }
+
+
   typeOverTimeData: ChartConfiguration<'line'>['data'] = {
     labels: [],
     datasets: []
@@ -386,6 +476,9 @@ export class DashboardComponent implements OnInit {
 
       // === Animals by Organization and Type (Horizontal Stacked Bar) ===
       this.updateOrgStackedChart(animals);
+
+      // === Animals Types Over Time (Line Chart) ===
+      this.updateTypeOverTimeChart();
 
       // === Logging for Debugging ===
       // console.log('Chart labels:', this.chartData.labels);

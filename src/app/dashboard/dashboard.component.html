@@ -87,6 +87,14 @@
   <mat-tab label="Types Over Time">
     <section style="max-width: 1000px; margin: 2rem auto; padding: 1rem;">
       <h2 style="text-align: center; margin-bottom: 1rem;">Animal Types Over Time</h2>
+
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <label for="type-select">Show data for : </label>
+        <select [(ngModel)]="selectedTimeframe" (change)="updateTypeOverTimeChart()">
+          <option *ngFor="let tf of timeframes" [value]="tf.value">{{ tf.label }}</option>
+        </select>
+      </div>
+
       <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <canvas baseChart
                 #typeOverTimeChart="base-chart"
@@ -102,7 +110,7 @@
     <section style="max-width: 1000px; margin: 2rem auto;">
       <h2 style="text-align: center;">Breeds Over Past 30 Days</h2>
       <div style="text-align: center; margin-bottom: 1rem;">
-        <label for="type-select">Animal Type:</label>
+        <label for="type-select">Animal Type : </label>
         <select id="type-select" [(ngModel)]="selectedAnimalType" (change)="updateBreedChart(allAnimals)">
           <option *ngFor="let type of availableTypes" [value]="type">{{ type }}</option>
         </select>
