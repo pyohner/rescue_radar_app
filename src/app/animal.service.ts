@@ -46,4 +46,8 @@ export class AnimalService {
   getTodaysRescues(): Observable<TodaysRescues> {
     return this.http.get<TodaysRescues>(`${this.apiBaseUrl}/animals/todays-rescues`);
   }
+
+  getTodaysFeaturedAnimal() {
+    return this.http.get<any>(`${this.apiBaseUrl}/animals/todays-featured`);
+  }
 }

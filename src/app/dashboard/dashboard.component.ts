@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {MatTabsModule} from '@angular/material/tabs';
 import {CommonModule} from '@angular/common';
 import {NgChartsModule, BaseChartDirective} from 'ng2-charts';
@@ -13,13 +13,42 @@ import {FormsModule} from '@angular/forms';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
   @ViewChild('spayChart') spayChart: BaseChartDirective | undefined;
   @ViewChild('typeOverTimeChart') typeOverTimeChart: BaseChartDirective | undefined;
   @ViewChild('breedChart') breedChart: BaseChartDirective | undefined;
   @ViewChild('orgStackedChart') orgStackedChart: BaseChartDirective | undefined;
 
+  featuredAnimal: any = null;
+  intervalId: any = null;
+  countdown: number = 10;
+  isPaused: boolean = false;
+  private boundVisibilityHandler = this.handleVisibilityChange.bind(this);
+  userPaused: boolean = false;
+
+
+  loadFeaturedAnimal() {
+    this.animalService.getTodaysFeaturedAnimal().subscribe({
+      next: (data) => {
+        this.featuredAnimal = data;
+        this.countdown = 10;
+      },
+      error: (err) => {
+        console.error('Failed to load featured animal:', err);
+        this.featuredAnimal = null;
+      }
+    });
+  }
+
+  formatDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
 
   chartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
@@ -405,8 +434,38 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  startAutoRefresh() {
+    this.intervalId = setInterval(() => {
+      if (!this.isPaused) {
+        this.countdown--;
+        if (this.countdown <= 0) {
+          this.loadFeaturedAnimal();
+        }
+      }
+    }, 1000); // every second
+  }
+
+  togglePause() {
+    this.userPaused = !this.userPaused;
+    this.isPaused = this.userPaused;
+  }
+
+  handleVisibilityChange() {
+    if (document.hidden) {
+      this.isPaused = true;
+    } else {
+      this.isPaused = this.userPaused;
+      // this.countdown = 10;
+    }
+  }
+
+
   ngOnInit(): void {
     this.loadTodaysRescues();
+    this.loadFeaturedAnimal();
+    this.startAutoRefresh();
+    document.addEventListener('visibilitychange', this.boundVisibilityHandler);
+
 
     this.animalService.getAnimals().subscribe((animals: Animal[]) => {
       console.log('Fetched animals:', animals);
@@ -487,6 +546,13 @@ export class DashboardComponent implements OnInit {
       // console.log('Spayed:', spayed);
       // console.log('Not Spayed:', notSpayed);
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
+    document.removeEventListener('visibilitychange', this.boundVisibilityHandler);
   }
 
 }
