@@ -526,3 +526,29 @@ th {
   padding: 1.5rem;
   background: linear-gradient(to bottom right, #ecfdf5, #d1fae5, #f0fdf4);
 }
+
+.live-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #16a34a; /* green-600 */
+  animation: pulse 1.2s infinite;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

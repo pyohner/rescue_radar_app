@@ -22,16 +22,12 @@
               d="M5 3v4M3 5h4M19 14v4M17 16h4M11 19v2M10 20h2M15.24 5.64l1.42-1.42M16.66 5.64l-1.42-1.42M6.76 18.36l-1.42 1.42M5.34 18.36l1.42 1.42"/>
           </svg>
           <h2>Today's Rescues</h2>
-          <span class="green-badge">
-    {{ todaysRescues?.total }} animals saved today! 🎉
-  </span>
+          <span class="green-badge"><div class="live-indicator"></div> {{ todaysRescues?.total }} animals saved today!</span>
         </div>
 
         <div *ngIf="todaysRescues" style="margin-top: 1rem;">
-          <!--        <p>New rescues listed today: <strong>{{ todaysRescues.total }}</strong></p>-->
 
           <h3 style="margin-top: 1rem;">Animal Type Breakdown</h3>
-
 
           <div class="type-breakdown-grid">
             <!-- Chart on the left -->
