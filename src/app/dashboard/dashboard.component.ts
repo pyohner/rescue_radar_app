@@ -27,6 +27,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private boundVisibilityHandler = this.handleVisibilityChange.bind(this);
   userPaused: boolean = false;
 
+  typeColors: { [key: string]: string } = {
+    Dog: '#3B82F6',                  // Blue
+    Cat: '#8B5CF6',                  // Purple
+    Rabbit: '#10B981',              // Green
+    Bird: '#F59E0B',                // Yellow
+    'Small & Furry': '#EC4899',     // Pink
+    'Scales, Fins & Other': '#F97316', // Orange
+    Horse: '#6366F1',               // Indigo
+    Barnyard: '#A16207'             // Brownish Yellow
+  };
+
+  typeEmojis: { [key: string]: string } = {
+    Dog: '🐕',
+    Cat: '🐱',
+    Rabbit: '🐰',
+    Bird: '🐦',
+    'Small & Furry': '🐹',
+    'Scales, Fins & Other': '🐍',
+    Horse: '🐴',
+    Barnyard: '🐄'
+  };
+
 
   loadFeaturedAnimal() {
     this.animalService.getTodaysFeaturedAnimal().subscribe({
@@ -41,9 +63,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  formatDate(dateStr: string): string {
+  formatDate(dateStr: string | null | undefined): string {
+    if (!dateStr) return 'Unknown Date';
+
     const [year, month, day] = dateStr.split('-').map(Number);
     const date = new Date(year, month - 1, day);  // Local time
+
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -414,11 +439,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
         const counts = this.typeKeys.map(key => data.typeBreakdown[key]);
         const colors = ['#42A5F5', '#66BB6A', '#FFA726', '#AB47BC', '#FF7043', '#26C6DA'];
 
+        this.typeKeys = Object.keys(this.todaysRescues.typeBreakdown);
+
         this.todaysTypeChartData = {
           labels: this.typeKeys,
           datasets: [{
-            data: counts,
-            backgroundColor: colors
+            data: this.typeKeys.map(type => this.todaysRescues.typeBreakdown[type]),
+            backgroundColor: this.typeKeys.map(type => this.typeColors[type] || '#ccc'),
+            hoverOffset: 10
           }]
         };
 
@@ -458,6 +486,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.isPaused = this.userPaused;
       // this.countdown = 10;
     }
+  }
+
+  decodeHtmlEntities(text: string): string {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
   }
 
 

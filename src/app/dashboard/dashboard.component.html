@@ -1,184 +1,245 @@
-<header style="display: flex; align-items: center; gap: 20px; padding: 1.5rem 2rem;">
-  <img src="rescue_radar_logo.png" alt="Rescue Radar Logo" style="height: 60px;">
-  <div>
-    <h1 style="margin: 0; font-size: 1.8rem; color: #222;">Rescue Radar</h1>
-    <p style="margin: 4px 0 0; color: #555; font-size: 1rem;">
-      Daily insights into animal rescues in the greater Orlando / Central Florida area.
-    </p>
+<div class="dashboard-bg">
+
+
+  <div class="dashboard-header">
+    <div class="dashboard-header-inner">
+      <img src="rescue_radar_logo.png" alt="Rescue Radar Logo"/>
+      <div>
+        <h1>Rescue Radar</h1>
+        <p>Daily insights into animal rescues in the greater Orlando / Central Florida area.</p>
+      </div>
+    </div>
   </div>
-</header>
 
-<mat-tab-group>
-  <mat-tab label="Today's Rescues">
-    <section style="max-width: 900px; margin: 2rem auto; padding: 1rem;">
-      <h2 style="text-align: center;">Today's Rescues ({{ formatDate(todaysRescues?.date) }})</h2>
 
-      <!-- === Featured Rescue Card === -->
-      <div *ngIf="featuredAnimal" class="featured-animal-card" style="margin: 1rem auto; max-width: 700px; display: flex; gap: 1.5rem; align-items: center; background: #f0f8ff; padding: 1rem; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
-        <img [src]="featuredAnimal.primary_photo" alt="{{ featuredAnimal.name }}" style="width: 160px; height: 160px; object-fit: cover; border-radius: 10px;">
-        <div style="flex: 1;">
-          <h3>{{ featuredAnimal.name }}</h3>
-          <p>{{ featuredAnimal.type }} — {{ featuredAnimal.primary_breed }}</p>
-          <p>Age: {{ featuredAnimal.age }}</p>
-
-          <!-- Organization Name -->
-          <p *ngIf="featuredAnimal.organization_name" style="font-style: italic; color: #555;">
-            From {{ featuredAnimal.organization_name }}
-          </p>
-
-          <!-- Description -->
-          <p *ngIf="featuredAnimal.description" style="margin: 0.5rem 0; color: #444;">
-            {{ featuredAnimal.description }}
-          </p>
-
-          <!-- Link and Buttons -->
-          <a [href]="featuredAnimal.url" target="_blank" rel="noopener" style="display: inline-block; margin: 0.4rem 0; color: #1565c0;">
-            View Profile
-          </a>
-          <br>
-          <div class="countdown-container">
-            <button (click)="loadFeaturedAnimal()">Show Another</button>
-            <div class="countdown-bar">
-              <div class="countdown-bar-fill" [style.width.%]="(countdown / 10) * 100"></div>
-            </div>
-            <button (click)="togglePause()">
-              {{ isPaused ? 'Resume' : 'Pause' }}
-            </button>
-          </div>
+  <mat-tab-group>
+    <mat-tab label="Today's Rescues">
+      <section style="max-width: 900px; margin: 2rem auto; padding: 1rem;">
+        <div class="todays-rescues-header">
+          <svg class="sparkles-icon" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#F59E0B" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path
+              d="M5 3v4M3 5h4M19 14v4M17 16h4M11 19v2M10 20h2M15.24 5.64l1.42-1.42M16.66 5.64l-1.42-1.42M6.76 18.36l-1.42 1.42M5.34 18.36l1.42 1.42"/>
+          </svg>
+          <h2>Today's Rescues</h2>
+          <span class="green-badge">
+    {{ todaysRescues?.total }} animals saved today! 🎉
+  </span>
         </div>
-      </div>
 
-      <div *ngIf="todaysRescues" style="margin-top: 1rem;">
-        <p>New rescues listed today: <strong>{{ todaysRescues.total }}</strong></p>
+        <div *ngIf="todaysRescues" style="margin-top: 1rem;">
+          <!--        <p>New rescues listed today: <strong>{{ todaysRescues.total }}</strong></p>-->
 
-        <h3 style="margin-top: 1rem;">Animal Type Breakdown</h3>
+          <h3 style="margin-top: 1rem;">Animal Type Breakdown</h3>
 
-        <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1.5rem; margin-top: 1rem;">
-          <!-- Chart on the left -->
-          <div style="flex: 0 0 150px; max-width: 150px;">
-            <canvas baseChart
-                    [data]="todaysTypeChartData"
-                    [options]="todaysTypeChartOptions"
-                    [type]="'doughnut'">
-            </canvas>
-          </div>
 
-          <!-- Cards on the right -->
-          <div class="dashboard" style="flex: 1;">
-            <div class="card" *ngFor="let type of typeKeys">
-              <h4>{{ type }}</h4>
-              <p>{{ todaysRescues.typeBreakdown[type] }} animals</p>
+          <div class="type-breakdown-grid">
+            <!-- Chart on the left -->
+            <div class="chart-container">
+              <canvas baseChart
+                      [data]="todaysTypeChartData"
+                      [options]="todaysTypeChartOptions"
+                      [type]="'doughnut'">
+              </canvas>
+            </div>
+
+            <!-- Animal type cards -->
+            <div class="type-cards">
+              <div *ngFor="let type of typeKeys" class="type-card"
+                   [ngStyle]="{'border-color': typeColors[type] + '66'}">
+                <div class="type-icon" [ngStyle]="{'background-color': typeColors[type]}">
+                  {{ typeEmojis[type] || '🐾' }}
+                </div>
+                <div class="type-count" [style.color]="typeColors[type]">
+                  {{ todaysRescues.typeBreakdown[type] }}
+                </div>
+                <div class="type-label">
+                  {{ type }}
+                </div>
+              </div>
             </div>
           </div>
+
+          <div class="top-org-card">
+            <div class="top-org-header">
+              <div class="top-org-emoji">🏆</div>
+              <h3>Today's Top Organization</h3>
+            </div>
+
+            <div class="top-org-content">
+              <div>
+                <h4 class="top-org-name">{{ todaysRescues.topOrganization.name }}</h4>
+                <p class="top-org-stats">
+                  {{ todaysRescues.topOrganization.total }} rescues today:
+                  <ng-container *ngFor="let type of topOrgTypeKeys; let isLast = last">
+                    {{ todaysRescues.topOrganization.typeBreakdown[type] }} {{ type }}<span *ngIf="!isLast">, </span>
+                  </ng-container>
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <h3 style="margin-top: 1.5rem;">Top Organization: {{ todaysRescues.topOrganization.name }}</h3>
-        <p>Animals listed: {{ todaysRescues.topOrganization.total }}</p>
-
-        <h4>Breakdown by Type:</h4>
-        <ul>
-          <li *ngFor="let type of topOrgTypeKeys">
-            {{ type }}: {{ todaysRescues.topOrganization.typeBreakdown[type] }}
-          </li>
-        </ul>
-      </div>
-
-      <div *ngIf="!todaysRescues">
-        <p>Loading today's rescues...</p>
-      </div>
-    </section>
-  </mat-tab>
-
-  <mat-tab label="Animal Type Distribution">
-    <section style="max-width: 900px; margin: 2rem auto; padding: 1rem;">
-      <h2 style="text-align: center; margin-bottom: 1rem;">Animal Type Distribution</h2>
-      <p style="text-align: center; margin-bottom: 1rem;">Total animal counts since June 4, 2025</p>
-      <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <canvas baseChart
-                #mainChart="base-chart"
-                [data]="chartData"
-                [options]="chartOptions"
-                [type]="'bar'">
-        </canvas>
-      </div>
-    </section>
-  </mat-tab>
-
-  <mat-tab label="Spay/Neuter Status">
-    <section style="max-width: 600px; margin: 2rem auto; padding: 1rem;">
-      <h2 style="text-align: center; margin-bottom: 1rem;">Spay/Neuter Status</h2>
-      <p style="text-align: center; margin-bottom: 1rem;">Overall distribution since June 4, 2025</p>
-      <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <canvas baseChart
-                #spayChart="base-chart"
-                [data]="spayChartData"
-                [options]="spayChartOptions"
-                [type]="'doughnut'">
-        </canvas>
-      </div>
-    </section>
-  </mat-tab>
-
-  <mat-tab label="Types Over Time">
-    <section style="max-width: 1000px; margin: 2rem auto; padding: 1rem;">
-      <h2 style="text-align: center; margin-bottom: 1rem;">Animal Types Over Time</h2>
-
-      <div style="text-align: center; margin-bottom: 1rem;">
-        <label for="type-select">Show data for : </label>
-        <select [(ngModel)]="selectedTimeframe" (change)="updateTypeOverTimeChart()">
-          <option *ngFor="let tf of timeframes" [value]="tf.value">{{ tf.label }}</option>
-        </select>
-      </div>
-
-      <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <canvas baseChart
-                #typeOverTimeChart="base-chart"
-                [data]="typeOverTimeData"
-                [options]="typeOverTimeOptions"
-                [type]="'line'">
-        </canvas>
-      </div>
-    </section>
-  </mat-tab>
-
-  <mat-tab label="Breed Trends">
-    <section style="max-width: 1000px; margin: 2rem auto;">
-      <h2 style="text-align: center;">Breeds Over Past 30 Days</h2>
-      <div style="text-align: center; margin-bottom: 1rem;">
-        <label for="type-select">Animal Type : </label>
-        <select id="type-select" [(ngModel)]="selectedAnimalType" (change)="updateBreedChart(allAnimals)">
-          <option *ngFor="let type of availableTypes" [value]="type">{{ type }}</option>
-        </select>
-      </div>
-      <div class="breed-chart-wrapper"
-           style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <canvas baseChart
-                #breedChart="base-chart"
-                [data]="breedChartData"
-                [options]="breedChartOptions"
-                [type]="'line'">
-        </canvas>
-      </div>
-      <div class="custom-legend">
-        <div *ngFor="let item of customLegendLabels" class="legend-item">
-          <span class="legend-color" [style.backgroundColor]="item.color"></span>
-          {{ item.label }}
+        <div *ngIf="!todaysRescues">
+          <p>Loading today's rescues...</p>
         </div>
-      </div>
-    </section>
-  </mat-tab>
 
-  <mat-tab label="Top Organizations">
-    <section style="max-width: 1000px; margin: 2rem auto;">
-      <h2 style="text-align: center;">Top 20 Organizations by Animal Type (Past 30 Days)</h2>
-      <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <canvas baseChart
-                #orgStackedChart="base-chart"
-                [data]="orgStackedChartData"
-                [options]="orgStackedChartOptions"
-                [type]="'bar'">
-        </canvas>
-      </div>
-    </section>
-  </mat-tab>
-</mat-tab-group>
+        <!-- === Featured Rescue Card === -->
+        <div *ngIf="featuredAnimal" class="featured-animal-card fancy">
+          <img [src]="featuredAnimal.primary_photo" alt="{{ featuredAnimal.name }}"/>
+
+          <div class="animal-info">
+            <!-- TOP ROW -->
+            <div class="featured-animal-top">
+              <div class="animal-header">
+                <h3>{{ featuredAnimal.name }}</h3>
+                <span class="badge">{{ featuredAnimal.primary_breed }}</span>
+              </div>
+
+              <div class="featured-controls">
+                <div class="control-timer">
+                  <svg class="clock-icon" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#15803D"
+                       stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6v6l4 2"/>
+                  </svg>
+                  {{ countdown }}s
+                </div>
+
+                <button (click)="togglePause()" class="control-btn">
+                  <svg *ngIf="isPaused" xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" stroke="#15803D"
+                       stroke-width="2.2" viewBox="0 0 24 24">
+                    <path d="M5 3l14 9-14 9V3z"/>
+                  </svg>
+                  <svg *ngIf="!isPaused" xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" stroke="#15803D"
+                       stroke-width="2.2" viewBox="0 0 24 24">
+                    <rect x="6" y="4" width="4" height="16"/>
+                    <rect x="14" y="4" width="4" height="16"/>
+                  </svg>
+                </button>
+
+                <button (click)="loadFeaturedAnimal()" class="control-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" stroke="#ec4899" stroke-width="2.2"
+                       stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <path d="M5 4l10 8-10 8V4z"/>
+                    <path d="M19 5v14"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- STACKED DETAILS -->
+            <div class="animal-details">
+              <p class="breed-org">Rescued by: {{ featuredAnimal.organization_name }}</p>
+              <p class="age">Age: {{ featuredAnimal.age }}</p>
+              <p *ngIf="featuredAnimal.description" class="desc"
+                 [innerHTML]="decodeHtmlEntities(featuredAnimal.description)"></p>
+
+              <div class="actions">
+                <a [href]="featuredAnimal.url" target="_blank" rel="noopener" class="btn">
+                  View Full Profile
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+      </section>
+    </mat-tab>
+
+    <mat-tab label="Animal Type Distribution">
+      <section style="max-width: 900px; margin: 2rem auto; padding: 1rem;">
+        <h2 style="text-align: center; margin-bottom: 1rem;">Animal Type Distribution</h2>
+        <p style="text-align: center; margin-bottom: 1rem;">Total animal counts since June 4, 2025</p>
+        <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <canvas baseChart
+                  #mainChart="base-chart"
+                  [data]="chartData"
+                  [options]="chartOptions"
+                  [type]="'bar'">
+          </canvas>
+        </div>
+      </section>
+    </mat-tab>
+
+    <mat-tab label="Spay/Neuter Status">
+      <section style="max-width: 600px; margin: 2rem auto; padding: 1rem;">
+        <h2 style="text-align: center; margin-bottom: 1rem;">Spay/Neuter Status</h2>
+        <p style="text-align: center; margin-bottom: 1rem;">Overall distribution since June 4, 2025</p>
+        <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <canvas baseChart
+                  #spayChart="base-chart"
+                  [data]="spayChartData"
+                  [options]="spayChartOptions"
+                  [type]="'doughnut'">
+          </canvas>
+        </div>
+      </section>
+    </mat-tab>
+
+    <mat-tab label="Types Over Time">
+      <section style="max-width: 1000px; margin: 2rem auto; padding: 1rem;">
+        <h2 style="text-align: center; margin-bottom: 1rem;">Animal Types Over Time</h2>
+
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <label for="type-select">Show data for : </label>
+          <select [(ngModel)]="selectedTimeframe" (change)="updateTypeOverTimeChart()">
+            <option *ngFor="let tf of timeframes" [value]="tf.value">{{ tf.label }}</option>
+          </select>
+        </div>
+
+        <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <canvas baseChart
+                  #typeOverTimeChart="base-chart"
+                  [data]="typeOverTimeData"
+                  [options]="typeOverTimeOptions"
+                  [type]="'line'">
+          </canvas>
+        </div>
+      </section>
+    </mat-tab>
+
+    <mat-tab label="Breed Trends">
+      <section style="max-width: 1000px; margin: 2rem auto;">
+        <h2 style="text-align: center;">Breeds Over Past 30 Days</h2>
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <label for="type-select">Animal Type : </label>
+          <select id="type-select" [(ngModel)]="selectedAnimalType" (change)="updateBreedChart(allAnimals)">
+            <option *ngFor="let type of availableTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+        <div class="breed-chart-wrapper"
+             style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <canvas baseChart
+                  #breedChart="base-chart"
+                  [data]="breedChartData"
+                  [options]="breedChartOptions"
+                  [type]="'line'">
+          </canvas>
+        </div>
+        <div class="custom-legend">
+          <div *ngFor="let item of customLegendLabels" class="legend-item">
+            <span class="legend-color" [style.backgroundColor]="item.color"></span>
+            {{ item.label }}
+          </div>
+        </div>
+      </section>
+    </mat-tab>
+
+    <mat-tab label="Top Organizations">
+      <section style="max-width: 1000px; margin: 2rem auto;">
+        <h2 style="text-align: center;">Top 20 Organizations by Animal Type (Past 30 Days)</h2>
+        <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <canvas baseChart
+                  #orgStackedChart="base-chart"
+                  [data]="orgStackedChartData"
+                  [options]="orgStackedChartOptions"
+                  [type]="'bar'">
+          </canvas>
+        </div>
+      </section>
+    </mat-tab>
+  </mat-tab-group>
+
+</div>
